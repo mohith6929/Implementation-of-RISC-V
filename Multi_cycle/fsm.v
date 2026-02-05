@@ -49,11 +49,11 @@ always @(*) begin
             pc_update = 1;
             adr_src   = 0;
 
-            alu_srca  = 2'b00;   // PC
-            alu_srcb  = 2'b10;   // +4
-            alu_op    = 2'b00;   // ADD
+            alu_srca  = 2'b00;
+            alu_srcb  = 2'b10; 
+            alu_op    = 2'b00; 
 
-            result_src = 2'b10;  // PC+4 (for JAL later)
+            result_src = 2'b10;
 
             nxt_state = decode;
         end
@@ -61,9 +61,9 @@ always @(*) begin
 
         decode: begin
             // ALU computes branch target = old_pc + imm
-            alu_srca = 2'b01;    // old_pc
-            alu_srcb = 2'b01;    // imm
-            alu_op   = 2'b00;    // ADD
+            alu_srca = 2'b01;    
+            alu_srcb = 2'b01;   
+            alu_op   = 2'b00;   
 
             case (op)
                 7'b0000011,      // LW
@@ -91,9 +91,9 @@ always @(*) begin
 
 
         mem_adr: begin      
-           alu_srca = 2'b10;    // A (rs1)
-           alu_srcb = 2'b01;    // imm
-            alu_op   = 2'b00;    // ADD
+            alu_srca = 2'b10;    
+            alu_srcb = 2'b01;    
+            alu_op   = 2'b00;    
 
            if (op == 7'b0000011)
                 nxt_state = mem_read;
@@ -110,40 +110,40 @@ always @(*) begin
 
         mem_wb: begin
             reg_write  = 1;
-            result_src = 2'b01;  // MDR
+            result_src = 2'b01;  
             nxt_state  = fetch;
         end
 
 
         mem_write_s: begin
             adr_src   = 1;
-           mem_write = 1;
+            mem_write = 1;
             nxt_state = fetch;
         end
 
 
         execute_R: begin
-            alu_srca = 2'b10;    // A
-            alu_srcb = 2'b00;    // B
-            alu_op   = 2'b10;    // funct
+            alu_srca = 2'b10;    
+            alu_srcb = 2'b00;    
+            alu_op   = 2'b10;    
 
-           nxt_state = alu_wb;
+            nxt_state = alu_wb;
         end
 
 
         alu_wb: begin
-           reg_write  = 1;
-           result_src = 2'b00;  // ALUOut
-           nxt_state  = fetch;
+            reg_write  = 1;
+            result_src = 2'b00;  
+            nxt_state  = fetch;
         end
 
 
         execute_I: begin
-            alu_srca = 2'b10;    // A
-            alu_srcb = 2'b01;    // imm
-            alu_op   = 2'b10;    // funct
+            alu_srca = 2'b10;   
+            alu_srcb = 2'b01;    
+            alu_op   = 2'b10;    
 
-           nxt_state = alu_wb;
+            nxt_state = alu_wb;
         end
 
 
@@ -151,41 +151,41 @@ always @(*) begin
             pc_update  = 1;
             reg_write  = 1;
 
-            alu_srca = 2'b01;    // old_pc
-           alu_srcb = 2'b10;   
-           alu_op   = 2'b00;    // ADD
+            alu_srca = 2'b01;    
+            alu_srcb = 2'b10;   
+            alu_op   = 2'b00;    
 
-           result_src = 2'b00;  // PC+4
-           nxt_state  = alu_wb;
+            result_src = 2'b00;  
+            nxt_state  = alu_wb;
         end
 
 
         beq: begin
-            alu_srca = 2'b10;    // A
-            alu_srcb = 2'b00;    // B
-            alu_op   = 2'b01;    // SUB
+            alu_srca = 2'b10;    
+            alu_srcb = 2'b00;    
+            alu_op   = 2'b01;    
 
             branch = 1'b1;
 
-           nxt_state = fetch;
+            nxt_state = fetch;
         end
 
         execute_jalr: begin
-            alu_srca = 2'b10; // Rs1
-            alu_srcb = 2'b01; // Imm
-            alu_op   = 2'b00; // ADD
+            alu_srca = 2'b10; 
+            alu_srcb = 2'b01; 
+            alu_op   = 2'b00; 
             nxt_state = jalr_wb;
         end
 
         jalr_wb: begin
-            // 1. Update PC with Target (calculated in previous state)
+            // 1. Update PC with Target
             pc_update = 1;
-            result_src = 2'b00; // Select ALUOut
+            result_src = 2'b00; 
             
             // 2. Calculate Link (PC+4) for writeback
-            alu_srca = 2'b01; // OldPC
-            alu_srcb = 2'b10; // 4
-            alu_op   = 2'b00; // ADD
+            alu_srca = 2'b01; 
+            alu_srcb = 2'b10; 
+            alu_op   = 2'b00; 
             
             nxt_state = alu_wb; // Go to writeback to save PC+4 to Rd
         end
