@@ -1,8 +1,8 @@
 module alu(
-    input wire [2:0]cntrl;
-    input wire [31:0]a,b;
-    output wire zero;
-    output reg [31:0]result;
+    input wire [2:0]cntrl,
+    input wire [31:0]a,b,
+    output wire zero,
+    output reg [31:0]result
 );
 
 

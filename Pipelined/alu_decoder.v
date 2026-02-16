@@ -1,9 +1,9 @@
 module alu_decoder(
-    input wire op;
-    input wire [2:0]funct3;
-    input wire funct7;
-    input wire [1:0]alu_op;
-    output reg [2:0]alu_cntrl;
+    input wire op,
+    input wire [2:0]funct3,
+    input wire funct7,
+    input wire [1:0]alu_op,
+    output reg [2:0]alu_cntrl
 );
 
 

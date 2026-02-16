@@ -1,7 +1,7 @@
 module mux4(
-    input [1:0]s;
-    input [31:0]a0,a1,a2,a3;
-    output reg [31:0]b;
+    input [1:0]s,
+    input [31:0]a0,a1,a2,a3,
+    output reg [31:0]b
 );
 
 

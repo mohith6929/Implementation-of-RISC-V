@@ -1,12 +1,23 @@
 module main_decoder(
-    input wire [6:0]op;
-    output reg reg_write,alu_src,mem_write,branch,jump,jalr;
-    output reg [1:0]imm_src,alu_op,result_src;
+    input wire [6:0]op,
+    output reg reg_write,alu_src,mem_write,branch,jump,jalr,
+    output reg [1:0]imm_src,alu_op,result_src
 
 );
 
 always @(*)
 begin
+    // initial values
+    reg_write = 0;
+    mem_write = 0;
+    alu_src   = 0;
+    result_src= 0;
+    branch    = 0;
+    imm_src   = 2'b00;
+    alu_op    = 2'b00;
+    jump = 0;
+
+
     case (op)
         7'b0000011: begin // LW
             reg_write = 1;

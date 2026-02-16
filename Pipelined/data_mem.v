@@ -1,7 +1,7 @@
 module data_mem(
-    input wire clk,we;
-    input wire [31:0]a,wd;
-    output wire [31:0]rd;
+    input wire clk,we,
+    input wire [31:0]a,wd,
+    output wire [31:0]rd
 );
 
 

@@ -1,8 +1,8 @@
 module regi_file(
-    input wire clk,we3;
-    input wire [4:0]a1,a2,a3;
-    input wire [31:0]wd3;
-    output wire [31:0]rd1,rd2;
+    input wire clk,we3,
+    input wire [4:0]a1,a2,a3,
+    input wire [31:0]wd3,
+    output wire [31:0]rd1,rd2
 );
 
 

@@ -1,7 +1,7 @@
 module mux2(
-    input s;
-    input [31:0]a0,a1;
-    output [31:0]b;
+    input s,
+    input [31:0]a0,a1,
+    output [31:0]b
 );
 
 

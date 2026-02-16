@@ -1,7 +1,7 @@
 module extend(
-    input wire [1:0]immcntrl;
-    input wire [24:0]imm;
-    output reg [31:0]extimm;
+    input wire [1:0]immcntrl,
+    input wire [24:0]imm,
+    output reg [31:0]extimm
 );
 
 

@@ -10,6 +10,7 @@ wire [31:0]instrF;
 
 mux4 pc_mux(
     .s({jalrE,pc_srcE}), //jump
+    // .s({1'b0,pc_srcE}),
     .a0(pcplus4F),
     .a1(pcTargetE),
     .a2(ALU_resultE), //jump
@@ -21,6 +22,7 @@ mux4 pc_mux(
 pc pc_reg(
     .clk(clk),
     .reset(rst),
+    .en(stallF),
     .pc_nxt(pc_nxtF),
     .pc(pcF)
 );
@@ -41,6 +43,8 @@ instr_memo instr_rom(
 
 FD_pipe FD_pipe(
     .clk(clk),
+    .en(stallD),
+    .reset(flushD | rst),
     .instrF(instrF),
     .pcF(pcF),
     .pcplus4F(pcplus4F),
@@ -62,10 +66,11 @@ wire alu_srcD;
 wire mem_writeD;
 wire branchD;
 wire jumpD;
-wire [1:0]imm_srcD,
+wire [1:0]imm_srcD;
 wire [1:0]result_srcD;
 wire [2:0]alu_cntrlD;
 wire [31:0]instrD;
+wire [31:0]imm_extD;
 
 control_path control(
     .instr(instrD),
@@ -102,7 +107,8 @@ extend sign_extend(
 
 DE_pipe DE_pipe(
     .clk(clk),
-    rd1D(rd1D),
+    .reset(flushE | rst),
+    .rd1D(rd1D),
     .rd2D(rd2D),
     .pcD(pcD),
     .rdD(instrD[11:7]),
@@ -130,18 +136,23 @@ DE_pipe DE_pipe(
     .branchE(branchE),
     .jumpE(jumpE),
     .result_srcE(result_srcE),
-    .alu_cntrlE(alu_cntrlE)
+    .alu_cntrlE(alu_cntrlE),
+
+    .rs1D(instrD[19:15]),
+    .rs2D(instrD[24:20]),
+    .rs1E(rs1E),
+    .rs2E(rs2E)
 );
 
 
 //--------------------------------------
 
 
-wire [31:0]rd1E;;
-wire [31:0]rd2E;;
-wire [31:0]pcE;;
-wire [5:0]rdE;;
-wire [31:0]imm_extE;;
+wire [31:0]rd1E;
+wire [31:0]rd2E;
+wire [31:0]pcE;
+wire [4:0]rdE;
+wire [31:0]imm_extE;
 wire [31:0]pcplus4E;
 wire [31:0]pcTargetE;
 wire [31:0]ALUmux_outE;
@@ -158,12 +169,36 @@ wire [2:0]alu_cntrlE;
 wire zeroE;
 wire pc_srcE;
 
-assign pc_srcE = jumpE | (branchE & zeroE);
+wire [4:0]rs1E;
+wire [4:0]rs2E;
 
+wire [31:0]srcAE;
+wire [31:0]srcBE;
+wire [31:0]ALU_mux0;
+
+mux4 srcA_mux(
+    .s(forwardAE),
+    .a0(rd1E),
+    .a1(resultW),
+    .a2(ALU_resultM),
+    .b(srcAE)
+);
+
+
+mux4 srcB_mux(
+    .s(forwardBE),
+    .a0(rd2E),
+    .a1(resultW),
+    .a2(ALU_resultM),
+    .b(ALU_mux0)
+);
+
+
+assign pc_srcE = jumpE | (branchE & zeroE);
 
 mux2 ALU_mux(
     .s(alu_srcE),
-    .a0(rd2E),
+    .a0(ALU_mux0),
     .a1(imm_extE),
     .b(ALUmux_outE)
 );
@@ -171,7 +206,7 @@ mux2 ALU_mux(
 
 alu logi_unit(
     .cntrl(alu_cntrlE),
-    .a(rd1E),
+    .a(srcAE),
     .b(ALUmux_outE),
     .result(ALU_resultE),
     .zero(zeroE)
@@ -188,7 +223,7 @@ adder target_adder(
 EM_pipe EM_pipe(
     .clk(clk),
     .ALU_resultE(ALU_resultE),
-    .w_dataE(rd2E),
+    .w_dataE(ALU_mux0),
     .rdE(rdE),
     .pcplus4E(pcplus4E),
     .ALU_resultM(ALU_resultM),
@@ -210,7 +245,7 @@ EM_pipe EM_pipe(
 
 wire [31:0]ALU_resultM;
 wire [31:0]w_dataM;
-wire [31:0]rdM;
+wire [4:0]rdM;
 wire [31:0]pcplus4M;
 wire [31:0]read_dataM;
 
@@ -249,7 +284,7 @@ MW_pipe MW_pipe(
 
 wire [31:0]ALU_resultW;
 wire [31:0]read_dataW;
-wire [31:0]rdW;
+wire [4:0]rdW;
 wire [31:0]pcplus4W;
 wire [31:0]resultW;
 
@@ -264,6 +299,32 @@ mux4 result_mux(
     .a2(pcplus4W),
     .a3(pcplus4W),
     .b(resultW)
+);
+
+//---------------------------------------
+
+wire stallD,stallF,flushE,flushD;
+wire [1:0]forwardAE,forwardBE;
+
+
+hazard hazard(
+    .rs1E(rs1E),
+    .rs2E(rs2E),
+    .rdM(rdM),
+    .rdW(rdW),
+    .reg_writeM(reg_writeM),
+    .reg_writeW(reg_writeW),
+    .result_srcE(result_srcE),
+    .rdE(rdE),
+    .rs1D(instrD[19:15]),
+    .rs2D(instrD[24:20]),
+    .pc_srcE(pc_srcE),
+    .stallF(stallF),
+    .stallD(stallD),
+    .flushE(flushE),
+    .flushD(flushD),
+    .forwardAE(forwardAE),
+    .forwardBE(forwardBE)
 );
 
 endmodule
